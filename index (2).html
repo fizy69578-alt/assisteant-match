@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>Mathematica Pro | Калькулятор</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, sans-serif;
+            background: radial-gradient(ellipse at 20% 30%, #0a0a1a, #050510);
+            color: #e8edf5;
+            padding: 1rem;
+            min-height: 100vh;
+        }
+        .container { max-width: 100%; margin: 0 auto; }
+        h1 {
+            font-size: 1.6rem;
+            text-align: center;
+            background: linear-gradient(135deg, #a5b4fc, #818cf8, #60a5fa, #34d399);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        .sub {
+            color: #7c8ba0;
+            text-align: center;
+            font-size: 0.7rem;
+            margin-bottom: 1rem;
+        }
+        .mode-switch {
+            display: flex;
+            gap: 0.3rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 1rem;
+        }
+        .mode-btn {
+            background: rgba(30, 41, 59, 0.5);
+            border: 1px solid rgba(96, 165, 250, 0.15);
+            padding: 0.4rem 0.7rem;
+            border-radius: 1.5rem;
+            color: #94a3b8;
+            cursor: pointer;
+            font-size: 0.65rem;
+            transition: all 0.2s;
+        }
+        .mode-btn.active {
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            color: white;
+        }
+        .editor-card {
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(12px);
+            border-radius: 1.5rem;
+            padding: 1rem;
+        }
+        .input-area {
+            background: rgba(10, 14, 23, 0.8);
+            border-radius: 1rem;
+            padding: 1rem;
+        }
+        .input-group {
+            display: flex;
+            gap: 0.6rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 0.8rem;
+        }
+        textarea, .text-input {
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 0.8rem;
+            padding: 0.8rem;
+            width: 100%;
+            font-size: 1rem;
+            color: #e2e8f0;
+            font-family: monospace;
+        }
+        .text-input { width: 200px; }
+        .number-input {
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 0.6rem;
+            padding: 0.65rem;
+            width: 140px;
+            color: white;
+            text-align: center;
+        }
+        .select-task {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 0.6rem;
+            padding: 0.65rem;
+            color: white;
+            font-size: 0.8rem;
+        }
+        .tool-btn {
+            background: #334155;
+            border: none;
+            padding: 0.6rem;
+            border-radius: 1.5rem;
+            color: white;
+            cursor: pointer;
+            font-size: 0.75rem;
+        }
+        .tool-btn.primary {
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+        }
+        .result-card {
+            background: rgba(15, 23, 42, 0.9);
+            border-radius: 1rem;
+            padding: 1rem;
+            margin-top: 1rem;
+            text-align: center;
+        }
+        .result-label {
+            font-size: 0.7rem;
+            color: #7c8ba0;
+            margin-bottom: 0.5rem;
+        }
+        .result-visual {
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: #c084fc;
+            padding: 0.5rem;
+            word-break: break-word;
+            white-space: pre-wrap;
+            text-align: left;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .steps-box {
+            background: rgba(10, 14, 23, 0.7);
+            border-radius: 0.8rem;
+            padding: 0.8rem;
+            margin-top: 0.8rem;
+            font-family: monospace;
+            font-size: 0.7rem;
+            white-space: pre-wrap;
+            color: #8ba4c4;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+        canvas {
+            background: #0f172a;
+            border-radius: 0.5rem;
+            max-width: 100%;
+        }
+        .toolbar {
+            display: flex;
+            gap: 0.4rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 0.5rem;
+        }
+        .calc-buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+        .calc-btn {
+            background: #1e293b;
+            border: 1px solid #334155;
+            padding: 0.8rem;
+            border-radius: 0.8rem;
+            font-size: 1.2rem;
+            color: white;
+            cursor: pointer;
+            text-align: center;
+        }
+        .calc-btn.operator { background: #4f46e5; }
+        .calc-btn.equals { background: #10b981; }
+        .calc-btn.clear { background: #7f1d1d; }
+        @media (max-width: 480px) {
+            .mode-btn { font-size: 0.55rem; padding: 0.35rem 0.6rem; }
+            .calc-btn { padding: 0.6rem; font-size: 1rem; }
+            .text-input { width: 160px; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>MATHEMATICA PRO</h1>
+    <div class="sub">КАЛЬКУЛЯТОР | ДРОБИ | УРАВНЕНИЯ | ГЕОМЕТРИЯ</div>
+
+    <div class="mode-switch" id="modeSwitch">
+        <button class="mode-btn active" data-mode="calculator">КАЛЬКУЛЯТОР</button>
+        <button class="mode-btn" data-mode="roots">КОРНИ</button>
+        <button class="mode-btn" data-mode="fractions">ДРОБИ</button>
+        <button class="mode-btn" data-mode="mixed">СМЕШАННЫЕ</button>
+        <button class="mode-btn" data-mode="divisibility">ДЕЛИМОСТЬ</button>
+        <button class="mode-btn" data-mode="integers">ОТРИЦАТЕЛЬНЫЕ</button>
+        <button class="mode-btn" data-mode="coordinates">КООРДИНАТЫ</button>
+        <button class="mode-btn" data-mode="algebra">АЛГЕБРА</button>
+        <button class="mode-btn" data-mode="equations">УРАВНЕНИЯ</button>
+        <button class="mode-btn" data-mode="geometry">ГЕОМЕТРИЯ</button>
+    </div>
+
+    <div class="editor-card" id="mainCard">
+        <div id="modeContent"></div>
+        <div class="result-card">
+            <div class="result-label">РЕЗУЛЬТАТ</div>
+            <div id="resultVisual" class="result-visual">—</div>
+            <div id="resultDecimal" class="result-decimal"></div>
+        </div>
+        <div class="steps-box" id="stepsBox">Выберите модуль</div>
+    </div>
+</div>
+
+<script>
+    // ==================== ОСНОВНЫЕ МАТЕМАТИЧЕСКИЕ ФУНКЦИИ ====================
+    function gcd(a,b){ a=Math.abs(a); while(b){ let t=b; b=a%b; a=t; } return a; }
+    function lcm(a,b){ return Math.abs(a*b)/gcd(a,b); }
+    function simplifyFraction(num,den){ let g=gcd(num,den); return {num:num/g, den:den/g}; }
+    function improperToMixed(num,den){
+        let sign=num<0?-1:1, absNum=Math.abs(num), whole=Math.floor(absNum/den), rem=absNum%den;
+        if(rem===0) return {whole:sign*whole, num:0, den:1};
+        let g=gcd(rem,den);
+        return {whole:sign*whole, num:rem/g, den:den/g};
+    }
+    function mixedToImproper(whole,num,den){
+        let sign=whole<0?-1:1, absWhole=Math.abs(whole);
+        return {num:sign*(absWhole*den+num), den:den};
+    }
+
+    // ==================== НОВЫЙ МОДУЛЬ: ОБЫЧНЫЙ КАЛЬКУЛЯТОР ====================
+    let calcDisplay = "0";
+    let calcExpression = "";
+    
+    function updateCalcDisplay() {
+        const display = document.getElementById("calcDisplay");
+        if (display) display.value = calcDisplay;
+    }
+    
+    function calcAppend(value) {
+        if (calcDisplay === "0" && !isNaN(value)) {
+            calcDisplay = value;
+        } else {
+            calcDisplay += value;
+        }
+        updateCalcDisplay();
+    }
+    
+    function calcClear() {
+        calcDisplay = "0";
+        calcExpression = "";
+        updateCalcDisplay();
+        document.getElementById("resultVisual").innerHTML = "—";
+        document.getElementById("stepsBox").innerHTML = "Введите выражение";
+    }
+    
+    function calcDelete() {
+        if (calcDisplay.length === 1) {
+            calcDisplay = "0";
+        } else {
+            calcDisplay = calcDisplay.slice(0, -1);
+        }
+        updateCalcDisplay();
+    }
+    
+    function calcCalculate() {
+        try {
+            let expr = calcDisplay.replace(/×/g, '*').replace(/÷/g, '/');
+            let result = eval(expr);
+            document.getElementById("resultVisual").innerHTML = `${calcDisplay} = ${result}`;
+            document.getElementById("stepsBox").innerHTML = `ВЫЧИСЛЕНИЕ: ${calcDisplay} = ${result}`;
+            calcDisplay = result.toString();
+            updateCalcDisplay();
+        } catch(e) {
+            document.getElementById("resultVisual").innerHTML = "ОШИБКА";
+            document.getElementById("stepsBox").innerHTML = "Некорректное выражение";
+        }
+    }
+    
+    function calculatorMode(){
+        return `<div class="input-area">
+                    <div class="input-group">
+                        <input type="text" id="calcDisplay" class="text-input" value="0" readonly style="font-size:1.5rem; text-align:right; font-family:monospace;">
+                    </div>
+                    <div class="calc-buttons">
+                        <button class="calc-btn clear" onclick="calcClear()">C</button>
+                        <button class="calc-btn" onclick="calcDelete()">⌫</button>
+                        <button class="calc-btn" onclick="calcAppend('%')">%</button>
+                        <button class="calc-btn operator" onclick="calcAppend('÷')">÷</button>
+                        
+                        <button class="calc-btn" onclick="calcAppend('7')">7</button>
+                        <button class="calc-btn" onclick="calcAppend('8')">8</button>
+                        <button class="calc-btn" onclick="calcAppend('9')">9</button>
+                        <button class="calc-btn operator" onclick="calcAppend('×')">×</button>
+                        
+                        <button class="calc-btn" onclick="calcAppend('4')">4</button>
+                        <button class="calc-btn" onclick="calcAppend('5')">5</button>
+                        <button class="calc-btn" onclick="calcAppend('6')">6</button>
+                        <button class="calc-btn operator" onclick="calcAppend('-')">-</button>
+                        
+                        <button class="calc-btn" onclick="calcAppend('1')">1</button>
+                        <button class="calc-btn" onclick="calcAppend('2')">2</button>
+                        <button class="calc-btn" onclick="calcAppend('3')">3</button>
+                        <button class="calc-btn operator" onclick="calcAppend('+')">+</button>
+                        
+                        <button class="calc-btn" onclick="calcAppend('0')">0</button>
+                        <button class="calc-btn" onclick="calcAppend('.')">.</button>
+                        <button class="calc-btn equals" onclick="calcCalculate()" colspan="2">=</button>
+                    </div>
+                </div>`;
+    }
+
+    // ==================== МОДУЛЬ КОРНИ ====================
+    function rootsMode(){
+        return `<div class="input-area"><div class="input-group"><select id="rootTask" class="select-task">
+                    <option value="sqrt">Квадратный корень</option>
+                    <option value="cbrt">Кубический корень</option>
+                    <option value="nthroot">Корень n-й степени</option>
+                    <option value="power">Возведение в степень</option>
+                </select></div>
+                <div id="sqrtDiv"><div class="input-group"><input type="number" id="sqrtNum" class="number-input" value="16"></div></div>
+                <div id="cbrtDiv" style="display:none;"><div class="input-group"><input type="number" id="cbrtNum" class="number-input" value="27"></div></div>
+                <div id="nthrootDiv" style="display:none;"><div class="input-group"><input type="number" id="nthValue" class="number-input" placeholder="Число" value="16"><input type="number" id="nthDegree" class="number-input" placeholder="Степень" value="4"></div></div>
+                <div id="powerDiv" style="display:none;"><div class="input-group"><input type="number" id="baseNum" class="number-input" placeholder="Основание" value="2"><input type="number" id="exponentNum" class="number-input" placeholder="Показатель" value="5"></div></div>
+                </div><button class="tool-btn primary" id="rootsBtn" style="width:100%">ВЫЧИСЛИТЬ</button>`;
+    }
+
+    // ==================== МОДУЛЬ ДРОБИ ====================
+    function fractionsMode(){
+        return `<div class="input-area"><div class="input-group"><input type="text" id="fracExpr" class="text-input" placeholder="2/3+1/4" value="2/3+1/4" style="width:200px;"></div></div>
+                <button class="tool-btn primary" id="fracBtn" style="width:100%">ВЫЧИСЛИТЬ</button>`;
+    }
+
+    // ==================== МОДУЛЬ СМЕШАННЫЕ ДРОБИ ====================
+    let mixedExpr=[{type:"mixed",whole:2,num:1,den:2},{type:"operator",value:"+"},{type:"mixed",whole:1,num:1,den:4}];
+    function renderMixed(){
+        let container=document.getElementById("mixedLine");
+        if(!container) return;
+        container.innerHTML="";
+        mixedExpr.forEach((item,idx)=>{
+            if(item.type==="mixed"){
+                let div=document.createElement("div");
+                div.style.cssText="display:inline-flex;align-items:center;gap:0.3rem;background:rgba(30,41,59,0.6);padding:0.4rem;border-radius:0.8rem;position:relative;";
+                div.innerHTML=`<input type="number" class="mwhole" value="${item.whole}" data-idx="${idx}" style="width:50px;background:#0f172a;border:1px solid #334155;border-radius:0.4rem;padding:0.3rem;text-align:center;color:white;">
+                    <div style="display:inline-flex;flex-direction:column;align-items:center;">
+                        <input type="number" class="mnum" value="${item.num}" data-idx="${idx}" style="width:40px;background:#0f172a;border:1px solid #334155;border-radius:0.3rem;padding:0.2rem;text-align:center;color:white;">
+                        <div style="width:30px;height:2px;background:#60a5fa;margin:2px 0;"></div>
+                        <input type="number" class="mden" value="${item.den}" data-idx="${idx}" style="width:40px;background:#0f172a;border:1px solid #334155;border-radius:0.3rem;padding:0.2rem;text-align:center;color:white;">
+                    </div>
+                    <button class="delMixed" data-idx="${idx}" style="background:#7f1d1d;border:none;width:20px;height:20px;border-radius:50%;color:white;cursor:pointer;position:absolute;top:-6px;right:-6px;font-size:10px;">X</button>`;
+                container.appendChild(div);
+            } else if(item.type==="operator"){
+                let opDiv=document.createElement("button");
+                opDiv.textContent=item.value;
+                opDiv.style.cssText="background:#4f46e5;border:none;width:45px;height:45px;border-radius:0.8rem;font-size:1.2rem;color:white;cursor:default;";
+                opDiv.disabled=true;
+                container.appendChild(opDiv);
+            }
+        });
+        document.querySelectorAll(".mwhole,.mnum,.mden").forEach(inp=>{
+            inp.addEventListener("change",(e)=>{
+                let idx=parseInt(inp.dataset.idx);
+                let val=parseInt(inp.value)||0;
+                if(mixedExpr[idx]){
+                    if(inp.classList.contains("mwhole")) mixedExpr[idx].whole=val;
+                    if(inp.classList.contains("mnum")) mixedExpr[idx].num=val;
+                    if(inp.classList.contains("mden") && val!==0) mixedExpr[idx].den=val;
+                }
+                renderMixed();
+            });
+        });
+        document.querySelectorAll(".delMixed").forEach(btn=>{
+            btn.addEventListener("click",()=>{
+                let idx=parseInt(btn.dataset.idx);
+                mixedExpr.splice(idx,1);
+                if(mixedExpr.length===0) mixedExpr=[{type:"mixed",whole:1,num:1,den:2}];
+                renderMixed();
+            });
+        });
+    }
+    function calcMixed(){
+        let tokens=[];
+        for(let item of mixedExpr){
+            if(item.type==="mixed"){
+                let imp=mixedToImproper(item.whole,item.num,item.den);
+                tokens.push({type:"num",num:imp.num,den:imp.den});
+            } else if(item.type==="operator") tokens.push({type:"op",value:item.value});
+        }
+        let working=JSON.parse(JSON.stringify(tokens));
+        let i=0;
+        while(i<working.length){
+            if(working[i].type==="op" && (working[i].value==="×"||working[i].value==="÷")){
+                let l=working[i-1], r=working[i+1], res;
+                if(working[i].value==="×") res={num:l.num*r.num, den:l.den*r.den};
+                else res={num:l.num*r.den, den:l.den*r.num};
+                let g=gcd(res.num,res.den);
+                if(g>1){ res.num/=g; res.den/=g; }
+                working.splice(i-1,3,{type:"num",num:res.num,den:res.den});
+                i=0;
+            } else i++;
+        }
+        i=0;
+        while(working.length>1){
+            if(working[i].type==="op"){
+                let l=working[i-1], r=working[i+1], res;
+                let cd=lcm(l.den,r.den);
+                let nl=l.num*(cd/l.den), nr=r.num*(cd/r.den);
+                if(working[i].value==="+") res={num:nl+nr, den:cd};
+                else res={num:nl-nr, den:cd};
+                let g=gcd(res.num,res.den);
+                if(g>1){ res.num/=g; res.den/=g; }
+                working.splice(i-1,3,{type:"num",num:res.num,den:res.den});
+                i=0;
+            } else i++;
+        }
+        let s=simplifyFraction(working[0].num,working[0].den);
+        let m=improperToMixed(s.num,s.den);
+        let result=m.num===0?`${m.whole}`:(m.whole!==0?`${m.whole} ${m.num}/${m.den}`:`${m.num}/${m.den}`);
+        document.getElementById("resultVisual").innerHTML=result;
+        document.getElementById("resultDecimal").innerHTML=`≈ ${(s.num/s.den).toFixed(6)}`;
+        document.getElementById("stepsBox").innerHTML="ВЫЧИСЛЕНИЕ ВЫПОЛНЕНО";
+    }
+    function mixedMode(){
+        return `<div class="input-area"><div id="mixedLine" style="display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:0.5rem;min-height:100px;"></div>
+                <div class="toolbar">
+                    <button class="tool-btn" id="addMixFrac">ДОБАВИТЬ</button>
+                    <button class="tool-btn" id="addMixPlus">+</button><button class="tool-btn" id="addMixMinus">-</button>
+                    <button class="tool-btn" id="addMixMul">×</button><button class="tool-btn" id="addMixDiv">÷</button>
+                    <button class="tool-btn" id="clearMix">ОЧИСТИТЬ</button>
+                </div></div>
+                <button class="tool-btn primary" id="calcMixBtn" style="width:100%;margin-top:0.5rem;">ВЫЧИСЛИТЬ</button>`;
+    }
+
+    // ==================== МОДУЛЬ ДЕЛИМОСТЬ ====================
+    function divisibilityMode(){
+        return `<div class="input-area"><div class="input-group"><input type="number" id="d1" class="number-input" value="24"><input type="number" id="d2" class="number-input" value="36"></div>
+                <div class="input-group"><select id="divTask" class="select-task">
+                    <option value="divisors">Все делители числа</option>
+                    <option value="prime">Проверка на простоту</option>
+                    <option value="factors">Разложение на множители</option>
+                    <option value="gcd">НОД</option>
+                    <option value="lcm">НОК</option>
+                </select></div>
+                </div><button class="tool-btn primary" id="divBtn" style="width:100%">ВЫЧИСЛИТЬ</button>`;
+    }
+
+    // ==================== МОДУЛЬ ОТРИЦАТЕЛЬНЫЕ ЧИСЛА ====================
+    function integersMode(){
+        return `<div class="input-area"><div class="input-group"><input type="number" id="ia" class="number-input" value="-5"><input type="number" id="ib" class="number-input" value="3"></div>
+                <div class="input-group"><select id="intTask" class="select-task">
+                    <option value="abs">Модуль числа</option>
+                    <option value="compare">Сравнение</option>
+                    <option value="add">Сложение</option>
+                    <option value="subtract">Вычитание</option>
+                    <option value="multiply">Умножение</option>
+                    <option value="divide">Деление</option>
+                </select></div></div>
+                <button class="tool-btn primary" id="intBtn" style="width:100%">ВЫЧИСЛИТЬ</button>`;
+    }
+
+    // ==================== МОДУЛЬ КООРДИНАТЫ ====================
+    function drawCoordinatePlane(x,y){
+        let canvas=document.getElementById("coordCanvas");
+        if(!canvas) return;
+        let ctx=canvas.getContext("2d");
+        let w=canvas.width=320, h=canvas.height=320;
+        ctx.fillStyle="#0f172a"; ctx.fillRect(0,0,w,h);
+        ctx.strokeStyle="#334155"; ctx.lineWidth=1;
+        let cx=w/2, cy=h/2;
+        ctx.beginPath(); ctx.moveTo(0,cy); ctx.lineTo(w,cy); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(cx,0); ctx.lineTo(cx,h); ctx.stroke();
+        ctx.fillStyle="#60a5fa"; ctx.font="9px monospace";
+        for(let i=-6;i<=6;i++){
+            let px=cx+i*25;
+            if(px>=0 && px<=w){ ctx.fillText(i,px-3,cy+12); }
+            let py=cy-i*25;
+            if(py>=0 && py<=h){ ctx.fillText(i,cx+5,py+3); }
+        }
+        ctx.fillStyle="#c084fc";
+        let px=cx+x*25, py=cy-y*25;
+        if(px>=0 && px<=w && py>=0 && py<=h){
+            ctx.beginPath(); ctx.arc(px,py,5,0,2*Math.PI); ctx.fill();
+            ctx.fillStyle="#fbbf24";
+            ctx.fillText(`(${x},${y})`,px+8,py-5);
+        }
+    }
+    function coordinatesMode(){
+        return `<div class="input-area"><div class="input-group"><input type="number" id="cx" class="number-input" placeholder="X" value="2"><input type="number" id="cy" class="number-input" placeholder="Y" value="3"></div>
+                <canvas id="coordCanvas" width="320" height="320" style="width:100%;max-width:320px;margin:0 auto;display:block;"></canvas></div>
+                <button class="tool-btn primary" id="coordBtn" style="width:100%;margin-top:0.5rem;">ПОСТРОИТЬ</button>`;
+    }
+
+    // ==================== МОДУЛЬ АЛГЕБРА ====================
+    function algebraMode(){
+        return `<div class="input-area"><div class="input-group"><input type="text" id="algExpr" class="text-input" placeholder="3*(x+2)" value="3*(x+2)" style="width:200px;"></div>
+                <button class="tool-btn primary" id="algBtn" style="width:100%">РАСКРЫТЬ СКОБКИ</button></div>`;
+    }
+
+    // ==================== МОДУЛЬ УРАВНЕНИЯ ====================
+    function solveLinear(expr){
+        expr=expr.replace(/\s/g,'');
+        if(expr.includes(',')){
+            let eqs=expr.split(',');
+            function parse(eq){
+                let sides=eq.split('=');
+                let left=sides[0], right=parseFloat(sides[1]);
+                let xC=0,yC=0;
+                let parts=left.split(/([+-])/);
+                let sign=1;
+                for(let i=0;i<parts.length;i++){
+                    if(parts[i]==='+'||parts[i]==='-'){ sign=parts[i]==='+'?1:-1; continue; }
+                    let term=parts[i];
+                    if(term.includes('x')){
+                        let coeff=term.replace('x','');
+                        if(coeff===''||coeff==='+') coeff=1;
+                        else if(coeff==='-') coeff=-1;
+                        else coeff=parseFloat(coeff);
+                        xC+=sign*coeff;
+                    } else if(term.includes('y')){
+                        let coeff=term.replace('y','');
+                        if(coeff===''||coeff==='+') coeff=1;
+                        else if(coeff==='-') coeff=-1;
+                        else coeff=parseFloat(coeff);
+                        yC+=sign*coeff;
+                    }
+                }
+                return {a:xC,b:yC,c:right};
+            }
+            let p1=parse(eqs[0]),p2=parse(eqs[1]);
+            let det=p1.a*p2.b-p2.a*p1.b;
+            let x=(p1.c*p2.b-p2.c*p1.b)/det;
+            let y=(p1.a*p2.c-p2.a*p1.c)/det;
+            return {x:x,y:y};
+        }
+        let sides=expr.split('=');
+        let left=sides[0], right=parseFloat(sides[1]);
+        let xC=0, cV=0;
+        let parts=left.split(/([+-])/);
+        let sign=1;
+        for(let i=0;i<parts.length;i++){
+            if(parts[i]==='+'||parts[i]==='-'){ sign=parts[i]==='+'?1:-1; continue; }
+            let term=parts[i];
+            if(term.includes('x')){
+                let coeff=term.replace('x','');
+                if(coeff===''||coeff==='+') coeff=1;
+                else if(coeff==='-') coeff=-1;
+                else coeff=parseFloat(coeff);
+                xC+=sign*coeff;
+            } else if(term!==''){
+                cV+=sign*parseFloat(term);
+            }
+        }
+        return {x:(right-cV)/xC};
+    }
+    function equationsMode(){
+        return `<div class="input-area"><div class="input-group"><input type="text" id="eqExpr" class="text-input" placeholder="2x+3=7 или 2x+y=7,x-y=2" value="2x+3=7" style="width:220px;"></div></div>
+                <button class="tool-btn primary" id="eqBtn" style="width:100%">РЕШИТЬ</button>`;
+    }
+
+    // ==================== МОДУЛЬ ГЕОМЕТРИЯ ====================
+    function drawPieChart(data){
+        let canvas=document.getElementById("pieCanvas");
+        if(!canvas) return;
+        let ctx=canvas.getContext("2d");
+        let w=canvas.width=280, h=canvas.height=280;
+        ctx.fillStyle="#0f172a"; ctx.fillRect(0,0,w,h);
+        let total=data.reduce((a,b)=>a+b,0);
+        if(total===0) return;
+        let colors=["#c084fc","#60a5fa","#34d399","#fbbf24","#f87171","#a855f7"];
+        let start=0;
+        for(let i=0;i<data.length;i++){
+            let angle=(data[i]/total)*2*Math.PI;
+            ctx.beginPath();
+            ctx.fillStyle=colors[i%colors.length];
+            ctx.moveTo(w/2,h/2);
+            ctx.arc(w/2,h/2,w/2-12,start,start+angle);
+            ctx.fill();
+            start+=angle;
+        }
+    }
+    function geometryMode(){
+        return `<div class="input-area"><div class="input-group"><select id="geoTask" class="select-task">
+                    <option value="circle">Окружность и круг</option><option value="chart">Круговая диаграмма</option>
+                </select></div>
+                <div id="circleDiv"><div class="input-group"><input type="number" id="radius" class="number-input" value="5"></div></div>
+                <div id="chartDiv" style="display:none;"><div class="input-group"><input type="text" id="chartData" class="text-input" placeholder="30,50,20" value="30,50,20" style="width:160px;"></div></div>
+                <canvas id="pieCanvas" width="280" height="280" style="width:100%;max-width:280px;margin:0 auto;display:block;"></canvas></div>
+                <button class="tool-btn primary" id="geoBtn" style="width:100%;margin-top:0.5rem;">ВЫЧИСЛИТЬ</button>`;
+    }
+
+    // ==================== ЗАГРУЗЧИК МОДУЛЕЙ ====================
+    let currentModule = "calculator";
+
+    function loadModule(module){
+        currentModule = module;
+        let contentDiv = document.getElementById("modeContent");
+        if(module==="calculator") contentDiv.innerHTML = calculatorMode();
+        else if(module==="roots") contentDiv.innerHTML = rootsMode();
+        else if(module==="fractions") contentDiv.innerHTML = fractionsMode();
+        else if(module==="mixed") contentDiv.innerHTML = mixedMode();
+        else if(module==="divisibility") contentDiv.innerHTML = divisibilityMode();
+        else if(module==="integers") contentDiv.innerHTML = integersMode();
+        else if(module==="coordinates") contentDiv.innerHTML = coordinatesMode();
+        else if(module==="algebra") contentDiv.innerHTML = algebraMode();
+        else if(module==="equations") contentDiv.innerHTML = equationsMode();
+        else if(module==="geometry") contentDiv.innerHTML = geometryMode();
+        
+        document.getElementById("resultVisual").innerHTML = "—";
+        document.getElementById("resultDecimal").innerHTML = "";
+        document.getElementById("stepsBox").innerHTML = "Выберите модуль";
+        
+        // Делаем функции калькулятора глобальными
+        window.calcAppend = calcAppend;
+        window.calcClear = calcClear;
+        window.calcDelete = calcDelete;
+        window.calcCalculate = calcCalculate;
+        
+        if(module==="calculator"){
+            updateCalcDisplay();
+        }
+        
+        if(module==="roots"){
+            document.getElementById("rootTask")?.addEventListener("change", ()=>{
+                let val=document.getElementById("rootTask").value;
+                document.getElementById("sqrtDiv").style.display=val==="sqrt"?"block":"none";
+                document.getElementById("cbrtDiv").style.display=val==="cbrt"?"block":"none";
+                document.getElementById("nthrootDiv").style.display=val==="nthroot"?"block":"none";
+                document.getElementById("powerDiv").style.display=val==="power"?"block":"none";
+            });
+            document.getElementById("rootsBtn")?.addEventListener("click", ()=>{
+                let task=document.getElementById("rootTask").value;
+                let res="";
+                if(task==="sqrt"){ let n=parseFloat(document.getElementById("sqrtNum").value); res=`√${n} = ${Math.sqrt(n)}`; }
+                if(task==="cbrt"){ let n=parseFloat(document.getElementById("cbrtNum").value); res=`∛${n} = ${Math.cbrt(n)}`; }
+                if(task==="nthroot"){ let n=parseFloat(document.getElementById("nthValue").value); let d=parseFloat(document.getElementById("nthDegree").value); res=`Корень ${d} степени из ${n} = ${Math.pow(n,1/d)}`; }
+                if(task==="power"){ let b=parseFloat(document.getElementById("baseNum").value); let e=parseFloat(document.getElementById("exponentNum").value); res=`${b}^${e} = ${Math.pow(b,e)}`; }
+                document.getElementById("resultVisual").innerHTML=res;
+                document.getElementById("stepsBox").innerHTML="ВЫЧИСЛЕНИЕ ВЫПОЛНЕНО";
+            });
+            document.getElementById("rootTask")?.dispatchEvent(new Event("change"));
+        }
+        if(module==="fractions"){
+            document.getElementById("fracBtn")?.addEventListener("click",()=>{
+                let val=document.getElementById("fracExpr").value;
+                try{ 
+                    let expr=val.replace(/\s/g,'');
+                    let parts=expr.split(/([+\-*/])/);
+                    let parse=(str)=>str.includes('/')?{num:parseInt(str.split('/')[0]), den:parseInt(str.split('/')[1])}:{num:parseInt(str), den:1};
+                    let result=parse(parts[0]);
+                    for(let i=1;i<parts.length;i+=2){
+                        let op=parts[i], next=parse(parts[i+1]);
+                        if(op==='+') result={num:result.num*next.den+next.num*result.den, den:result.den*next.den};
+                        else if(op==='-') result={num:result.num*next.den-next.num*result.den, den:result.den*next.den};
+                        else if(op==='*') result={num:result.num*next.num, den:result.den*next.den};
+                        else if(op==='/') result={num:result.num*next.den, den:result.den*next.num};
+                    }
+                    let s=simplifyFraction(result.num,result.den);
+                    document.getElementById("resultVisual").innerHTML=`${s.num}/${s.den}`;
+                    document.getElementById("resultDecimal").innerHTML=`≈ ${(s.num/s.den).toFixed(6)}`;
+                    document.getElementById("stepsBox").innerHTML="ВЫЧИСЛЕНИЕ ВЫПОЛНЕНО";
+                } catch(e){ document.getElementById("resultVisual").innerHTML="ОШИБКА"; }
+            });
+        }
+        if(module==="mixed"){ 
+            renderMixed();
+            document.getElementById("addMixFrac")?.addEventListener("click",()=>{ mixedExpr.push({type:"mixed",whole:1,num:1,den:2}); renderMixed(); });
+            document.getElementById("addMixPlus")?.addEventListener("click",()=>{ mixedExpr.push({type:"operator",value:"+"}); renderMixed(); });
+            document.getElementById("addMixMinus")?.addEventListener("click",()=>{ mixedExpr.push({type:"operator",value:"-"}); renderMixed(); });
+            document.getElementById("addMixMul")?.addEventListener("click",()=>{ mixedExpr.push({type:"operator",value:"×"}); renderMixed(); });
+            document.getElementById("addMixDiv")?.addEventListener("click",()=>{ mixedExpr.push({type:"operator",value:"÷"}); renderMixed(); });
+            document.getElementById("clearMix")?.addEventListener("click",()=>{ mixedExpr=[{type:"mixed",whole:2,num:1,den:2}]; renderMixed(); });
+            document.getElementById("calcMixBtn")?.addEventListener("click",calcMixed);
+        }
+        if(module==="divisibility"){
+            document.getElementById("divBtn")?.addEventListener("click",()=>{
+                let a=parseInt(document.getElementById("d1").value), b=parseInt(document.getElementById("d2").value), t=document.getElementById("divTask").value, res="";
+                if(t==="divisors"){ let d=[]; for(let i=1;i<=Math.sqrt(a);i++){ if(a%i===0){ d.push(i); if(i!==a/i) d.push(a/i); } } d.sort((x,y)=>x-y); res=`Делители ${a}: ${d.join(", ")}`; }
+                if(t==="prime"){ let p=a>1; for(let i=2;i<=Math.sqrt(a);i++) if(a%i===0){ p=false; break; } res=`${a} — ${p?"простое":"составное"}`; }
+                if(t==="factors"){ let f=[], n=a; for(let i=2;i<=Math.sqrt(n);i++){ while(n%i===0){ f.push(i); n/=i; } } if(n>1) f.push(n); res=`${a} = ${f.join(" × ")}`; }
+                if(t==="gcd") res=`НОД(${a},${b}) = ${gcd(a,b)}`;
+                if(t==="lcm") res=`НОК(${a},${b}) = ${lcm(a,b)}`;
+                document.getElementById("resultVisual").innerHTML=res;
+                document.getElementById("stepsBox").innerHTML="ВЫЧИСЛЕНИЕ ВЫПОЛНЕНО";
+            });
+        }
+        if(module==="integers"){
+            document.getElementById("intBtn")?.addEventListener("click",()=>{
+                let a=parseFloat(document.getElementById("ia").value), b=parseFloat(document.getElementById("ib").value), t=document.getElementById("intTask").value, res="";
+                if(t==="abs") res=`|${a}| = ${Math.abs(a)}, |${b}| = ${Math.abs(b)}`;
+                if(t==="compare") res=`${a} ${a>b?">":(a<b?"<":"=")} ${b}`;
+                if(t==="add") res=`${a} + ${b} = ${a+b}`;
+                if(t==="subtract") res=`${a} - ${b} = ${a-b}`;
+                if(t==="multiply") res=`${a} × ${b} = ${a*b}`;
+                if(t==="divide") res=b===0?"Деление на ноль":`${a} ÷ ${b} = ${(a/b).toFixed(6)}`;
+                document.getElementById("resultVisual").innerHTML=res;
+                document.getElementById("stepsBox").innerHTML="ВЫЧИСЛЕНИЕ ВЫПОЛНЕНО";
+            });
+        }
+        if(module==="coordinates"){
+            document.getElementById("coordBtn")?.addEventListener("click",()=>{
+                let x=parseFloat(document.getElementById("cx").value), y=parseFloat(document.getElementById("cy").value);
+                drawCoordinatePlane(x,y);
+                document.getElementById("resultVisual").innerHTML=`Точка (${x}, ${y})`;
+                document.getElementById("stepsBox").innerHTML="КООРДИНАТНАЯ ПЛОСКОСТЬ";
+            });
+            drawCoordinatePlane(2,3);
+        }
+        if(module==="algebra"){
+            document.getElementById("algBtn")?.addEventListener("click",()=>{
+                let expr=document.getElementById("algExpr").value;
+                let match=expr.replace(/\s/g,'').match(/([+-]?\d*\.?\d*)\*?\(([^)]+)\)/);
+                if(match){
+                    let a=match[1]===''||match[1]==='+'?1:(match[1]==='-'?-1:parseFloat(match[1]));
+                    let inner=match[2];
+                    let terms=inner.split(/([+-])/);
+                    let result=[], sign=1;
+                    for(let i=0;i<terms.length;i++){
+                        if(terms[i]==='+'||terms[i]==='-'){ sign=terms[i]==='+'?1:-1; continue; }
+                        let term=terms[i];
+                        let coeff=parseFloat(term)||(term.includes('x')?1:0);
+                        if(isNaN(coeff)) coeff=term.includes('x')?1:0;
+                        let nc=a*sign*coeff;
+                        if(term.includes('x')) result.push(`${nc>0?'+':''}${nc}x`);
+                        else if(nc!==0) result.push(`${nc>0?'+':''}${nc}`);
+                    }
+                    let final=result.join('').replace(/^\+/,'');
+                    document.getElementById("resultVisual").innerHTML=final;
+                    document.getElementById("stepsBox").innerHTML=`РАСКРЫТИЕ СКОБОК: ${expr} = ${final}`;
+                } else { document.getElementById("resultVisual").innerHTML=expr; document.getElementById("stepsBox").innerHTML="НЕЛЬЗЯ РАСКРЫТЬ СКОБКИ"; }
+            });
+        }
+        if(module==="equations"){
+            document.getElementById("eqBtn")?.addEventListener("click",()=>{
+                let expr=document.getElementById("eqExpr").value;
+                try{
+                    let res=solveLinear(expr);
+                    if(res.y!==undefined) document.getElementById("resultVisual").innerHTML=`x = ${res.x}, y = ${res.y}`;
+                    else document.getElementById("resultVisual").innerHTML=`x = ${res.x}`;
+                    document.getElementById("stepsBox").innerHTML="РЕШЕНИЕ НАЙДЕНО";
+                } catch(e){ document.getElementById("resultVisual").innerHTML="ОШИБКА"; document.getElementById("stepsBox").innerHTML="Проверьте формат ввода"; }
+            });
+        }
+        if(module==="geometry"){
+            document.getElementById("geoTask")?.addEventListener("change",()=>{
+                let val=document.getElementById("geoTask").value;
+                document.getElementById("circleDiv").style.display=val==="circle"?"flex":"none";
+                document.getElementById("chartDiv").style.display=val==="chart"?"flex":"none";
+            });
+            document.getElementById("geoBtn")?.addEventListener("click",()=>{
+                let task=document.getElementById("geoTask").value;
+                if(task==="circle"){
+                    let r=parseFloat(document.getElementById("radius").value);
+                    document.getElementById("resultVisual").innerHTML=`C = ${(2*Math.PI*r).toFixed(4)}, S = ${(Math.PI*r*r).toFixed(4)}`;
+                    document.getElementById("stepsBox").innerHTML=`РАДИУС = ${r}`;
+                } else {
+                    let data=document.getElementById("chartData").value.split(',').map(Number);
+                    drawPieChart(data);
+                    document.getElementById("resultVisual").innerHTML="ДИАГРАММА ПОСТРОЕНА";
+                    document.getElementById("stepsBox").innerHTML=`ДАННЫЕ: ${data.join(", ")}`;
+                }
+            });
+            document.getElementById("geoTask")?.dispatchEvent(new Event("change"));
+            drawPieChart([30,50,20]);
+        }
+    }
+    
+    document.querySelectorAll(".mode-btn").forEach(btn=>{
+        btn.addEventListener("click",()=>{
+            document.querySelectorAll(".mode-btn").forEach(b=>b.classList.remove("active"));
+            btn.classList.add("active");
+            loadModule(btn.dataset.mode);
+        });
+    });
+    
+    loadModule("calculator");
+</script>
+</body>
+</html>
